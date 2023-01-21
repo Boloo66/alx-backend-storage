@@ -64,7 +64,7 @@ def call_history(method: Callable) -> Callable:
     inputs = method.__qualname__ + ":inputs"
     outputs = method.__qualname__ + ":outputs"
 
-    @wraps(method)
+    @functools.wraps(method)
     def wrapper(self, *args, **kwds):
         """wrapper of decorator"""
         self._redis.rpush(inputs, str(args))
