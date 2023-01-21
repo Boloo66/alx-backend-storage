@@ -34,6 +34,7 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+'''
 def replay(fn: Any):
     """ Shows the number of calls, parameter and values """
     self_ = fn.__self__
@@ -55,6 +56,22 @@ def replay(fn: Any):
             value = ""
 
         print("{}(*({})) -> {}".format(func_name, para, value))
+'''
+
+
+def call_history(method: Callable) -> Callable:
+    """ number of history inputs"""
+    inputs = method.__qualname__ + ":inputs"
+    outputs = method.__qualname__ + ":outputs"
+
+    @wraps(method)
+    def wrapper(self, *args, **kwds):
+        """wrapper of decorator"""
+        self._redis.rpush(inputs, str(args))
+        returned_method = method(self, *args, **kwds)
+        self._redis.rpush(outputs, str(returned_method))
+        return returned_method
+    return wrapper
 
 
 class Cache:
