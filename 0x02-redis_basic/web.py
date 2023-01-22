@@ -9,24 +9,21 @@ from functools import wraps
 redis = redis.Redis()
 
 
-def wrap_requests(fn: Callable) -> Callable:
-    """ Decorator wrapper """
-
+def outter(fn):
     @wraps(fn)
-    def wrapper(url):
-        """ Wrapper for decorator guy """
+    def inner(url):
+
+        cached = redis.get(f"cache:{url}")
+        if cached:
+            return cached.decode("utf-8")
         redis.incr(f"count:{url}")
-        cached_response = redis.get(f"cached:{url}")
-        if cached_response:
-            return cached_response.decode('utf-8')
         result = fn(url)
-        redis.setex(f"cached:{url}", 10, result)
+        redis.setex(f"cached{url}", 10, result)
         return result
+    return inner
 
-    return wrapper
 
-
-@wrap_requests
+@outter
 def get_page(url: str) -> str:
     """get page self descriptive
     """
